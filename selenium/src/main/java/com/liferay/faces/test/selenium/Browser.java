@@ -15,14 +15,15 @@
  */
 package com.liferay.faces.test.selenium;
 
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.junit.Assert;
-
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebDriver.TargetLocator;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
@@ -105,8 +106,8 @@ public class Browser {
 		Assert.assertTrue("Element " + xpath + " is not displayed.", elementDisplayed);
 
 		String elementText = element.getText();
-		Assert.assertEquals("Element " + xpath + " does not contain text \"" + text +
-			"\". Instead it contains text \"" + elementText + "\".", text, elementText);
+		Assert.assertTrue("Element " + xpath + " does not contain text \"" + text +
+			"\". Instead it contains text \"" + elementText + "\".", elementText.contains(text));
 	}
 
 	// Currently unused:
@@ -281,7 +282,27 @@ public class Browser {
 		wait.until(expectedCondition);
 	}
 
+	public String getCurrentUrl() {
+		return webDriver.getCurrentUrl();
+	}
+
+	public String getWindowHandle() {
+		return webDriver.getWindowHandle();
+	}
+
+	public Set<String> getWindowHandles() {
+		return webDriver.getWindowHandles();
+	}
+
+	public TargetLocator switchTo() {
+		return webDriver.switchTo();
+	}
+
 	public WebElement getElement(String xpath) {
 		return webDriver.findElement(By.xpath(xpath));
+	}
+
+	public void close() {
+		webDriver.close();
 	}
 }
