@@ -57,6 +57,8 @@ public class Browser implements WebDriver {
 		logger.setLevel(logLevel);
 	}
 
+	private final String NAME;
+
 	private Browser() {
 
 		String defaultBrowser = "phantomjs";
@@ -65,15 +67,15 @@ public class Browser implements WebDriver {
 			defaultBrowser = "firefox";
 		}
 
-		String browser = TestUtil.getSystemPropertyOrDefault("integration.browser", defaultBrowser);
+		NAME = TestUtil.getSystemPropertyOrDefault("integration.browser", defaultBrowser);
 
-		if ("phantomjs".equals(browser)) {
+		if ("phantomjs".equals(NAME)) {
 			webDriver = new PhantomJSDriver();
 		}
-		else if ("chrome".equals(browser)) {
+		else if ("chrome".equals(NAME)) {
 			webDriver = new ChromeDriver();
 		}
-		else if ("firefox".equals(browser)) {
+		else if ("firefox".equals(NAME)) {
 			webDriver = new FirefoxDriver();
 		}
 
@@ -180,31 +182,6 @@ public class Browser implements WebDriver {
 	}
 
 	@Override
-	public String getCurrentUrl() {
-		return webDriver.getCurrentUrl();
-	}
-
-	@Override
-	public String getPageSource() {
-		return webDriver.getPageSource();
-	}
-
-	@Override
-	public String getTitle() {
-		return webDriver.getTitle();
-	}
-
-	@Override
-	public String getWindowHandle() {
-		return webDriver.getWindowHandle();
-	}
-
-	@Override
-	public Set<String> getWindowHandles() {
-		return webDriver.getWindowHandles();
-	}
-
-	@Override
 	public Options manage() {
 		return webDriver.manage();
 	}
@@ -305,5 +282,34 @@ public class Browser implements WebDriver {
 
 	public void waitUntil(ExpectedCondition expectedCondition) {
 		wait.until(expectedCondition);
+	}
+
+	@Override
+	public String getCurrentUrl() {
+		return webDriver.getCurrentUrl();
+	}
+
+	public String getName() {
+		return NAME;
+	}
+
+	@Override
+	public String getPageSource() {
+		return webDriver.getPageSource();
+	}
+
+	@Override
+	public String getTitle() {
+		return webDriver.getTitle();
+	}
+
+	@Override
+	public String getWindowHandle() {
+		return webDriver.getWindowHandle();
+	}
+
+	@Override
+	public Set<String> getWindowHandles() {
+		return webDriver.getWindowHandles();
 	}
 }
