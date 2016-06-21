@@ -30,6 +30,18 @@ import com.liferay.faces.test.selenium.Browser;
  */
 public final class SeleniumAssert {
 
+	public static void assertCheckboxNotChecked(Browser browser, String xpath) {
+
+		WebElement checkbox = findFirstElementByXpath(browser, xpath);
+		Assert.assertNotNull("Element " + xpath + " is not present in the DOM.", checkbox);
+
+		boolean checkboxDisplayed = checkbox.isDisplayed();
+		Assert.assertTrue("Checkbox " + xpath + " is not displayed.", checkboxDisplayed);
+
+		boolean checkboxSelected = checkbox.isSelected();
+		Assert.assertFalse("Checkbox " + xpath + " is checked.", checkboxSelected);
+	}
+
 	public static void assertElementNotPresent(Browser browser, String xpath) {
 
 		List<WebElement> elements = browser.findElements(By.xpath(xpath));
@@ -40,6 +52,20 @@ public final class SeleniumAssert {
 
 		WebElement element = findFirstElementByXpath(browser, xpath);
 		Assert.assertNotNull("Element " + xpath + " is not present in the DOM.", element);
+	}
+
+	public static void assertElementTextNotVisible(Browser browser, String xpath, String text) {
+
+		WebElement element = findFirstElementByXpath(browser, xpath);
+
+		boolean elementDisplayed = false;
+		String elementText = "";
+		if (element != null) {
+			elementDisplayed = element.isDisplayed();
+			elementText = element.getText();
+		}
+		Assert.assertTrue("Element " + xpath + " text \"" +
+			elementText + "\" is visible. Instead it should be invisible.",(element == null || !elementDisplayed || !elementText.contains(text)));
 	}
 
 	public static void assertElementTextVisible(Browser browser, String xpath, String text) {
@@ -64,7 +90,7 @@ public final class SeleniumAssert {
 		Assert.assertTrue("Element " + xpath + " is not displayed.", elementDisplayed);
 
 		String elementValue = element.getAttribute("value");
-		Assert.assertEquals("Element " + xpath + " does contain the value \"" + value +
+		Assert.assertEquals("Element " + xpath + " does not contain the value \"" + value +
 			"\". Instead it contains the value \"" + elementValue + "\".", value, elementValue);
 	}
 
