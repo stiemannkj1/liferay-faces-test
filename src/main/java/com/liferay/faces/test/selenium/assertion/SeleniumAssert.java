@@ -73,6 +73,19 @@ public final class SeleniumAssert {
 			elementText + "\".", elementText.contains(text));
 	}
 
+	public static void assertElementType(Browser browser, String xpath, String type) {
+
+		WebElement element = findFirstElementByXpath(browser, xpath);
+		Assert.assertNotNull("Element " + xpath + " is not present in the DOM.", element);
+
+		boolean elementDisplayed = element.isDisplayed();
+		Assert.assertTrue("Element " + xpath + " is not displayed.", elementDisplayed);
+
+		String elementType = element.getAttribute("type");
+		Assert.assertEquals("Element " + xpath + " does not contain the type \"" + type +
+			"\". Instead it contains the type \"" + elementType + "\".", type, elementType);
+	}
+
 	public static void assertElementValue(Browser browser, String xpath, String value) {
 
 		WebElement element = findFirstElementByXpath(browser, xpath);
