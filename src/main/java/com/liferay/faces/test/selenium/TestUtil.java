@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2016 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2017 Liferay, Inc. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,10 @@
  */
 package com.liferay.faces.test.selenium;
 
-import org.openqa.selenium.WebElement;
-import org.openqa.selenium.support.ui.ExpectedConditions;
-
-import com.liferay.faces.test.selenium.expectedconditions.PageLoaded;
+import java.io.File;
+import java.util.Locale;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 /**
@@ -26,70 +26,106 @@ import com.liferay.faces.test.selenium.expectedconditions.PageLoaded;
  */
 public final class TestUtil {
 
-	// Private Constants
-	private static final String SIGN_IN_URL;
-	private static final String LOGIN;
-	private static final String PASSWORD;
-
-	// Private Xpath
-	private static final String loginXpath;
-	private static final String passwordXpath;
-	private static final String signInButtonXpath;
-
-	// /* package-private */ Constants
-	/* package-private */ static final boolean RUNNING_WITH_MAVEN_SUREFIRE_PLUGIN = Boolean.valueOf(TestUtil.getSystemPropertyOrDefault(
-				"RUNNING_WITH_MAVEN_SUREFIRE_PLUGIN", "false"));
+	// Logger
+	private static final Logger logger = Logger.getLogger(TestUtil.class.getName());
 
 	// Public Constants
-	public static final String BASE_URL;
-	public static final String CONTAINER = TestUtil.getSystemPropertyOrDefault("integration.container", "tomcat");
+	public static final String DEFAULT_BASE_URL = "http://" + TestUtil.getHost() + ":" + TestUtil.getPort();
 	public static final String DEFAULT_PLUTO_CONTEXT = "/pluto/portal";
+	public static final String JAVA_IO_TMPDIR;
+
+	// /* package-private */ Constants
+	/* package-private */ static final boolean RUNNING_WITH_MAVEN = Boolean.valueOf(TestUtil.getSystemPropertyOrDefault(
+				"RUNNING_WITH_MAVEN", "false"));
 
 	static {
 
-		String defaultSignInContext = "";
-		String defaultLoginXpath = "";
-		String defaultPasswordXpath = "";
-		String defaultSignInButtonXpath = "";
-		String defaultLogin = "";
-		String defaultPassword = "";
+		String javaIOTmpdir = System.getProperty("java.io.tmpdir");
 
-		if (CONTAINER.contains("liferay")) {
-
-			defaultSignInContext = "/c/portal/login";
-			defaultLoginXpath = "//input[contains(@id, '_login') and @type='text']";
-			defaultPasswordXpath = "//input[contains(@id, '_password') and @type='password']";
-			defaultSignInButtonXpath = "//button[contains(., 'Sign In')]";
-			defaultLogin = "test@liferay.com";
-			defaultPassword = "test";
-		}
-		else if (CONTAINER.contains("pluto")) {
-
-			defaultSignInContext = DEFAULT_PLUTO_CONTEXT;
-			defaultLoginXpath = "//input[contains(@id, '_username')]";
-			defaultPasswordXpath = "//input[contains(@id, '_password')]";
-			defaultSignInButtonXpath = "//input[contains(@id, '_login')]";
-			defaultLogin = "pluto";
-			defaultPassword = "pluto";
+		if (!javaIOTmpdir.endsWith(File.separator)) {
+			javaIOTmpdir += File.separator;
 		}
 
-		String host = TestUtil.getSystemPropertyOrDefault("integration.host", "localhost");
-		String port = TestUtil.getSystemPropertyOrDefault("integration.port", "8080");
-		String signInContext = TestUtil.getSystemPropertyOrDefault("integration.sign.in.context", defaultSignInContext);
-
-		BASE_URL = "http://" + host + ":" + port;
-		SIGN_IN_URL = BASE_URL + signInContext;
-
-		loginXpath = TestUtil.getSystemPropertyOrDefault("integration.login.xpath", defaultLoginXpath);
-		passwordXpath = TestUtil.getSystemPropertyOrDefault("integration.password.xpath", defaultPasswordXpath);
-		signInButtonXpath = TestUtil.getSystemPropertyOrDefault("integration.sign.in.button.xpath",
-				defaultSignInButtonXpath);
-		LOGIN = TestUtil.getSystemPropertyOrDefault("integration.login", defaultLogin);
-		PASSWORD = TestUtil.getSystemPropertyOrDefault("integration.password", defaultPassword);
+		JAVA_IO_TMPDIR = javaIOTmpdir;
 	}
 
 	private TestUtil() {
 		throw new AssertionError();
+	}
+
+	public static int getBrowserWaitTimeOut() {
+		return TestUtil.getBrowserWaitTimeOut(5);
+	}
+
+	public static int getBrowserWaitTimeOut(Integer defaultTimeOutInSeconds) {
+
+		String defaultTimeOutInSecondsString = defaultTimeOutInSeconds.toString();
+		String timeOutInSecondsString = getSystemPropertyOrDefault("integration.browser.wait.time.out",
+				defaultTimeOutInSecondsString);
+
+		return Integer.parseInt(timeOutInSecondsString);
+	}
+
+	public static String getContainer() {
+		return getContainer("liferay");
+	}
+
+	public static String getContainer(String defaultContainer) {
+		return getSystemPropertyOrDefault("integration.container", defaultContainer);
+	}
+
+	public static String getHost() {
+		return getHost("localhost");
+	}
+
+	public static String getHost(String defaultHost) {
+		return getSystemPropertyOrDefault("integration.host", defaultHost);
+	}
+
+	public static Level getLogLevel() {
+
+		String defaultLogLevel = "WARNING";
+
+		if (!RUNNING_WITH_MAVEN) {
+			defaultLogLevel = "FINE";
+		}
+
+		return getLogLevel(defaultLogLevel);
+	}
+
+	public static Level getLogLevel(String defaultLogLevel) {
+
+		Level logLevel;
+		String logLevelString = getSystemPropertyOrDefault("integration.log.level", null);
+
+		if (logLevelString != null) {
+
+			logLevelString = logLevelString.toUpperCase(Locale.ENGLISH);
+
+			try {
+				logLevel = Level.parse(logLevelString);
+			}
+			catch (Exception e) {
+
+				logger.log(Level.WARNING,
+					"\"{0}\" is not a valid log level. Setting log level to the default of \"{1}\".",
+					new String[] { logLevelString, defaultLogLevel });
+				logLevel = Level.parse(defaultLogLevel);
+			}
+		}
+		else {
+			logLevel = Level.parse(defaultLogLevel);
+		}
+
+		return logLevel;
+	}
+
+	public static String getPort() {
+		return getPort("8080");
+	}
+
+	public static String getPort(String defaultPort) {
+		return getSystemPropertyOrDefault("integration.port", defaultPort);
 	}
 
 	/**
@@ -107,22 +143,5 @@ public final class TestUtil {
 		}
 
 		return propertyValue;
-	}
-
-	public static void signIn(Browser browser) {
-
-		browser.get(SIGN_IN_URL);
-		browser.waitForElementPresent(loginXpath);
-
-		WebElement loginElement = browser.findElementByXpath(loginXpath);
-		loginElement.clear();
-		loginElement.sendKeys(LOGIN);
-
-		WebElement passwordElement = browser.findElementByXpath(passwordXpath);
-		passwordElement.clear();
-		passwordElement.sendKeys(PASSWORD);
-		browser.click(signInButtonXpath);
-		browser.waitUntil(ExpectedConditions.stalenessOf(loginElement));
-		browser.waitUntil(new PageLoaded());
 	}
 }
