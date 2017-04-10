@@ -37,6 +37,7 @@ import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.interactions.Action;
 import org.openqa.selenium.interactions.Actions;
@@ -83,6 +84,9 @@ public class Browser implements WebDriver, JavascriptExecutor {
 		String name = TestUtil.getSystemPropertyOrDefault("integration.browser", defaultBrowser);
 		NAME = name.toLowerCase(Locale.ENGLISH);
 
+		String driver = TestUtil.getSystemPropertyOrDefault("integration.browser.driver", null);
+		String binary = TestUtil.getSystemPropertyOrDefault("integration.browser.binary", null);
+
 		if ("phantomjs".equals(NAME)) {
 
 			DesiredCapabilities desiredCapabilities = new DesiredCapabilities();
@@ -118,6 +122,16 @@ public class Browser implements WebDriver, JavascriptExecutor {
 		}
 		else if ("chrome".equals(NAME)) {
 			webDriver = new ChromeDriver();
+		}
+		else if ("chromium".equals(NAME)) {
+			System.err.println("driver = " + driver);
+			System.setProperty("webdriver.chrome.driver", driver);
+			ChromeOptions options = new ChromeOptions();
+			System.err.println("binary = " + binary);
+			options.setBinary(binary);
+			options.addArguments("--headless");
+			options.addArguments("--disable-infobars");
+			webDriver = new ChromeDriver(options);
 		}
 		else if ("firefox".equals(NAME)) {
 			webDriver = new FirefoxDriver();
